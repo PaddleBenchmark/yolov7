@@ -666,6 +666,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
 def load_image(self, index):
     # loads 1 image from dataset, returns img, original hw, resized hw
     img = self.imgs[index]
+    img = None
     if img is None:  # not cached
         path = self.img_files[index]
         img = cv2.imread(path)  # BGR
