@@ -339,8 +339,9 @@ def train(hyp, opt, device, tb_writer=None):
         if rank in [-1, 0]:
             pbar = tqdm(pbar, total=nb)  # progress bar
         optimizer.zero_grad()
+        t_start = time.time()
         for i, (imgs, targets, paths, _) in pbar:  # batch -------------------------------------------------------------
-            t_start = time.time()
+            
             ni = i + nb * epoch  # number integrated batches (since train start)
             imgs = imgs.to(device, non_blocking=True).float() / 255.0  # uint8 to float32, 0-255 to 0.0-1.0
 
@@ -383,7 +384,7 @@ def train(hyp, opt, device, tb_writer=None):
                 scaler.step(optimizer)  # optimizer.step
                 scaler.update()
                 optimizer.zero_grad()
-                if ema:
+                if ema and not opt.torchcompile:
                     ema.update(model)
 
             # Print
@@ -405,6 +406,7 @@ def train(hyp, opt, device, tb_writer=None):
                     wandb_logger.log({"Mosaics": [wandb_logger.wandb.Image(str(x), caption=x.name) for x in
                                                   save_dir.glob('train*.jpg') if x.exists()]})
             logging.info(f'\n{i} iter completed in, {(time.time() - t_start) :.3f}s/it.')
+            t_start = time.time()
             # end batch ------------------------------------------------------------------------------------------------
         # end epoch ----------------------------------------------------------------------------------------------------
 
